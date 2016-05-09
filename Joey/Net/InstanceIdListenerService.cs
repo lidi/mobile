@@ -15,7 +15,7 @@ namespace ClientApp
         public override void OnTokenRefresh()
         {
             var gcmManager = ServiceContainer.Resolve<GcmRegistrationManager>();
-            gcmManager.RegisterDevice().Start();
+            gcmManager.RegisterDevice();
         }
     }
 }

@@ -35,7 +35,7 @@ namespace Toggl.Joey.Net
             if (string.IsNullOrEmpty(RegistrationId))
             {
                 // Registration ID missing (either due update or something else)
-                RegisterDevice().Start();
+                RegisterDevice();
             }
         }
 

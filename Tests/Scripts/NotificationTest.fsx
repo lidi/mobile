@@ -12,8 +12,8 @@ let sendNotification(apiKey: string, message: string) =
     let jGcmData = new JObject()
     let jData = new JObject()
 
-    jData.Add ("message", unbox message)
-    jGcmData.Add ("to", unbox "/topics/global")
+    jData.Add ("message", new JValue(message))
+    jGcmData.Add ("to", new JValue("/topics/global"))
     jGcmData.Add ("data", jData)
 
     let url = new Uri ("https://gcm-http.googleapis.com/gcm/send")
