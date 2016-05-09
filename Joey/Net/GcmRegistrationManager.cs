@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Gms.Common;
 using Android.Gms.Gcm;
+using Android.Gms.Gcm.Iid;
 using Toggl.Phoebe;
 using Toggl.Phoebe.Logging;
 using Toggl.Phoebe.Net;
@@ -97,25 +98,42 @@ namespace Toggl.Joey.Net
             }
         }
 
-        private async void RegisterDevice()
+        public async System.Threading.Tasks.Task RegisterDevice()
         {
             var regId = RegistrationId;
 
             if (regId == null)
             {
-                // Obtain registration id for app:
-                var ctx = ServiceContainer.Resolve<Context> ();
-                var gcm = GoogleCloudMessaging.GetInstance(ctx);
+                ILogger logger = null;
+                ServiceContainer.TryResolve(out logger);
 
                 try
                 {
+                    // TODO: Xamarin walkthrough uses an Intent Service for this in Android.
+                    // Is it enough with a task for us?
+                    // https://developer.xamarin.com/guides/cross-platform/application_fundamentals/notifications/android/remote_notifications_in_android/#Register_with_GCM
                     RegistrationId = regId = await System.Threading.Tasks.Task.Factory.StartNew(() =>
-                                             gcm.Register(Build.GcmSenderId));
+                    {
+                        // Obtain registration id for app:
+                        var ctx = ServiceContainer.Resolve<Context>();
+                        var instanceID = InstanceID.GetInstance(ctx);
+                        var token = instanceID.GetToken(Build.GcmSenderId, GoogleCloudMessaging.InstanceIdScope, null);
+                        logger?.Info(Tag, "GCM Registration Token: " + token);
+
+                        // TODO: Send registration token to app server (if needed)
+                        //SendRegistrationToAppServer(token);
+
+                        // TODO: Subscribe to one or more notification topic channels. See:
+                        // https://developers.google.com/cloud-messaging/topic-messaging#sending_topic_messages_from_the_server
+                        //var pubSub = GcmPubSub.GetInstance(ctx);
+                        //pubSub.Subscribe(token, "/topics/global", null);
+
+                        return token;
+                    });
                 }
                 catch (Exception exc)
                 {
-                    var log = ServiceContainer.Resolve<ILogger> ();
-                    log.Info(Tag, exc, "Failed register device for GCM push.");
+                    logger?.Info(Tag, exc, "Failed register device for GCM push.");
                     return;
                 }
             }

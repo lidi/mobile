@@ -257,6 +257,7 @@
     <Compile Include="UI\Adapters\RecyclerCollectionDataAdapter.cs" />
     <Compile Include="Data\OldSettingsStore.cs" />
     <Compile Include="UI\Adapters\SettingsAdapter.cs" />
+    <Compile Include="Net\InstanceIdListenerService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
