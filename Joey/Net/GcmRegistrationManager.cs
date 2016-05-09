@@ -27,17 +27,15 @@ namespace Toggl.Joey.Net
 
         private void CheckRegistrationId()
         {
-            return;
-
             if (!HasGcmSupport)
             {
                 return;
             }
 
-            if (RegistrationId == null)
+            if (string.IsNullOrEmpty(RegistrationId))
             {
                 // Registration ID missing (either due update or something else)
-                RegisterDevice();
+                RegisterDevice().Start();
             }
         }
 
@@ -102,7 +100,7 @@ namespace Toggl.Joey.Net
         {
             var regId = RegistrationId;
 
-            if (regId == null)
+            if (string.IsNullOrEmpty(regId))
             {
                 ILogger logger = null;
                 ServiceContainer.TryResolve(out logger);
@@ -125,8 +123,10 @@ namespace Toggl.Joey.Net
 
                         // TODO: Subscribe to one or more notification topic channels. See:
                         // https://developers.google.com/cloud-messaging/topic-messaging#sending_topic_messages_from_the_server
-                        //var pubSub = GcmPubSub.GetInstance(ctx);
-                        //pubSub.Subscribe(token, "/topics/global", null);
+                        #if DEBUG
+                        var pubSub = GcmPubSub.GetInstance(ctx);
+                        pubSub.Subscribe(token, "/topics/global", null);
+                        #endif
 
                         return token;
                     });
