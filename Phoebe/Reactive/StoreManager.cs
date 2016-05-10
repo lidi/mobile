@@ -52,7 +52,9 @@ namespace Toggl.Phoebe.Reactive
             var initSyncMsg = DataSyncMsg.Create(initState);
 
             subject1
-            .ObserveOn(TaskPoolScheduler.Default)
+#if !__TESTS__
+            .ObserveOn(Scheduler.Default)
+#endif
             .Scan(initSyncMsg, (acc, tuple) =>
             {
                 DataSyncMsg<AppState> msg;
