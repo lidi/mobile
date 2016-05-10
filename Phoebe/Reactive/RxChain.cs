@@ -77,8 +77,18 @@ namespace Toggl.Phoebe.Reactive
         public static void Send(ServerRequest request, Continuation cont = null) =>
         StoreManager.Singleton.Send(new DataMsg.ServerRequest(request), cont);
 
-        public static void Send(DataMsg msg, Continuation cont = null) =>
-        StoreManager.Singleton.Send(msg, cont);
+        public static void Send(DataMsg msg, Continuation cont = null)
+        {
+            if (StoreManager.Singleton != null)
+            {
+                StoreManager.Singleton.Send(msg, cont);
+            }
+            else
+            {
+                var logger = ServiceContainer.Resolve<ILogger>();
+                logger?.Warning(nameof(RxChain), $"{msg?.GetType().Name} message received, but {nameof(StoreManager)} is not initialized");
+            }
+        }
     }
 }
 

@@ -77,7 +77,7 @@ namespace Toggl.Phoebe.Reactive
     {
         public static Reducer<AppState> Init()
         {
-            return new TagCompositeReducer<AppState> ()
+            return new TagCompositeReducer<AppState>()
                    .Add(typeof(DataMsg.ServerRequest), ServerRequest)
                    .Add(typeof(DataMsg.ServerResponse), ServerResponse)
                    .Add(typeof(DataMsg.TimeEntriesLoad), TimeEntriesLoad)
@@ -92,8 +92,43 @@ namespace Toggl.Phoebe.Reactive
                    .Add(typeof(DataMsg.UserDataPut), UserDataPut)
                    .Add(typeof(DataMsg.ResetState), Reset)
                    .Add(typeof(DataMsg.InitStateAfterMigration), InitStateAfterMigration)
-                   .Add(typeof(DataMsg.UpdateSetting), UpdateSettings);
+                   .Add(typeof(DataMsg.UpdateSetting), UpdateSettings)
+                   .Add(typeof(DataMsg.RegisterPush), RegisterPush)
+                   .Add(typeof(DataMsg.UnregisterPush), UnregisterPush);
         }
+
+        static DataSyncMsg<AppState> RegisterPush(AppState state, DataMsg msg)
+        {
+            var pushClient = ServiceContainer.Resolve<IPushClient>();
+
+            // TODO: pushClient.GetPushToken may take some time, we may need
+            // to make it asynchronous to prevent blocking the RxChain
+            var pushToken = string.IsNullOrEmpty(state.Settings.PushToken)
+                                  ? pushClient.GetPushToken()
+                                  : state.Settings.PushToken;
+
+            if (!string.IsNullOrEmpty(pushToken))
+            {
+                IgnoreTaskErrors(
+                    pushClient.Register(state.User.ApiToken, Build.PushService, pushToken),
+                    "Failed to send push token to server.");
+            }
+
+            return DataSyncMsg.Create(state.With(settings: state.Settings.With(pushToken: pushToken)));
+        }
+
+        static DataSyncMsg<AppState> UnregisterPush(AppState state, DataMsg msg)
+        {
+            if (!string.IsNullOrEmpty(state.User.ApiToken) && !string.IsNullOrEmpty(state.Settings.PushToken))
+            {
+                var pushClient = ServiceContainer.Resolve<IPushClient>();
+                IgnoreTaskErrors(
+                    pushClient.Register(state.User.ApiToken, Build.PushService, state.Settings.PushToken),
+                    "Failed to send push token to server.");
+            }
+
+            return DataSyncMsg.Create(state.With(settings: state.Settings.With(pushToken: string.Empty)));
+       }
 
         static DataSyncMsg<AppState> ServerRequest(AppState state, DataMsg msg)
         {
@@ -532,7 +567,7 @@ namespace Toggl.Phoebe.Reactive
                                // iOS only values
                                rossReadDurOnlyNotice : oldSettings.RossReadDurOnlyNotice,
                                // Android only values
-                               gcmRegistrationId : oldSettings.GcmRegistrationId,
+                               pushToken : oldSettings.GcmRegistrationId,
                                idleNotification : oldSettings.IdleNotification,
                                showNotification : oldSettings.ShowNotification);
             }
@@ -794,6 +829,16 @@ namespace Toggl.Phoebe.Reactive
                 return group.Key;
             }
             return DateTime.MinValue;
+        }
+
+        private static void IgnoreTaskErrors(System.Threading.Tasks.Task task, string errorMessage)
+        {
+            task.ContinueWith(t =>
+            {
+                var e = t.Exception;
+                var log = ServiceContainer.Resolve<ILogger>();
+                log.Info(nameof(Reducers), e, errorMessage);
+            }, TaskContinuationOptions.OnlyOnFaulted);
         }
         #endregion
     }

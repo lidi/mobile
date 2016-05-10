@@ -420,10 +420,10 @@ namespace Toggl.Phoebe.Reactive
         private static readonly int ReportsCurrentItemDefault = 0;
         private static readonly string ProjectSortDefault = "Clients";
         private static readonly bool ShowWelcomeDefault = true;
+        private static readonly string PushTokenDefault = string.Empty;
         // iOS only Default values
         private static readonly bool RossReadDurOnlyNoticeDefault = false;
         // Android only Default values
-        private static readonly string GcmRegistrationIdDefault = string.Empty;
         private static readonly bool IdleNotificationDefault = true;
         private static readonly bool ShowNotificationDefault = true;
 
@@ -438,12 +438,12 @@ namespace Toggl.Phoebe.Reactive
         public bool ChooseProjectForNew { get; private set; }
         public int ReportsCurrentItem { get; private set; }
         public string ProjectSort { get; private set; }
+        public string PushToken { get; private set; }
         // Show welcome screen or not the first time user start app.
         public bool ShowWelcome { get; private set; }
         // iOS only  values
         public bool RossReadDurOnlyNotice { get; private set; }
         // Android only  values
-        public string GcmRegistrationId { get; private set; }
         public bool IdleNotification { get; private set; }
         public bool ShowNotification { get; private set; }
 
@@ -459,10 +459,10 @@ namespace Toggl.Phoebe.Reactive
             ReportsCurrentItem = ReportsCurrentItemDefault;
             ProjectSort = ProjectSortDefault;
             ShowWelcome = ShowWelcomeDefault;
+            PushToken = PushTokenDefault;
             // iOS only  values
             RossReadDurOnlyNotice = RossReadDurOnlyNoticeDefault;
             // Android only  values
-            GcmRegistrationId = GcmRegistrationIdDefault;
             IdleNotification = IdleNotificationDefault;
             ShowNotification = ShowNotificationDefault;
         }
@@ -498,11 +498,11 @@ namespace Toggl.Phoebe.Reactive
             int? reportsCurrentItem = null,
             string projectSort = null,
             string installId = null,
+            string pushToken = null,
             // iOS only  values
             bool? rossReadDurOnlyNotice = null,
             DateTime? rossIgnoreSyncErrorsUntil = null,
             // Android only  values
-            string gcmRegistrationId = null,
             bool? idleNotification = null,
             bool? showNotification = null,
             bool? showWelcome = null)
@@ -521,10 +521,10 @@ namespace Toggl.Phoebe.Reactive
             copy.ChooseProjectForNew = chooseProjectForNew ?? copy.ChooseProjectForNew;
             copy.ReportsCurrentItem = reportsCurrentItem ?? copy.ReportsCurrentItem;
             copy.ProjectSort = projectSort ?? copy.ProjectSort;
+            copy.PushToken = pushToken ?? copy.PushToken;
             // iOS only  values
             copy.RossReadDurOnlyNotice = rossReadDurOnlyNotice ?? copy.RossReadDurOnlyNotice;
             // Android only  values
-            copy.GcmRegistrationId = gcmRegistrationId ?? copy.GcmRegistrationId;
             copy.IdleNotification = idleNotification ?? copy.IdleNotification;
             copy.ShowNotification = showNotification ?? copy.ShowNotification;
             copy.ShowWelcome = showWelcome ?? copy.ShowWelcome;

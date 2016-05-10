@@ -8,12 +8,12 @@ open System.Text
 open System.Threading.Tasks
 open Newtonsoft.Json.Linq
 
-let sendNotification(apiKey: string, message: string) =
+let sendNotification(apiKey: string, token: string, message: string) =
     let jGcmData = new JObject()
     let jData = new JObject()
 
     jData.Add ("message", new JValue(message))
-    jGcmData.Add ("to", new JValue("/topics/global"))
+    jGcmData.Add ("to", new JValue(token)) //"/topics/global"))
     jGcmData.Add ("data", jData)
 
     let url = new Uri ("https://gcm-http.googleapis.com/gcm/send")
@@ -41,7 +41,8 @@ let sendNotification(apiKey: string, message: string) =
         |> ignore
 
 let API_KEY = "API_KEY"
+let TOKEN = "TOKEN"
 let MESSAGE = "Hello, Xamarin!"
 
-sendNotification(API_KEY, MESSAGE)
+sendNotification(API_KEY, TOKEN, MESSAGE)
 

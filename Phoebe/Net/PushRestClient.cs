@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using XPlatUtils;
 
 namespace Toggl.Phoebe.Net
 {
@@ -65,12 +66,34 @@ namespace Toggl.Phoebe.Net
                                                string.Format("{0}:api_token", authToken))));
         }
 
-        public async Task Register(string authToken, PushService service, string regid)
+        public string GetPushToken()
+        {
+            var token = string.Empty;
+
+            // TODO: Probably not the best way to do this, we can move this code to the platform projects later
+            #if __ANDROID__
+            var ctx = ServiceContainer.Resolve<Android.Content.Context>();
+
+            // Check Google Play Services availability
+            if (Android.Gms.Common.GoogleApiAvailability.Instance.IsGooglePlayServicesAvailable(ctx)
+                == Android.Gms.Common.ConnectionResult.Success)
+            {
+                var instanceID = Android.Gms.Gcm.Iid.InstanceID.GetInstance(ctx);
+                token = instanceID.GetToken(Build.GcmSenderId, Android.Gms.Gcm.GoogleCloudMessaging.InstanceIdScope, null);
+            }
+            #elif __IOS__
+            // TODO
+            #endif
+
+            return token;
+        }
+
+        public async Task Register(string authToken, PushService service, string pushToken)
         {
             using(var httpClient = MakeHttpClient())
             {
                 var url = new Uri(v8Url, "subscribe");
-                string json = GetPayload(service, regid);
+                string json = GetPayload(service, pushToken);
 
                 var httpReq = new HttpRequestMessage()
                 {
@@ -84,12 +107,12 @@ namespace Toggl.Phoebe.Net
             }
         }
 
-        public async Task Unregister(string authToken, PushService service, string regid)
+        public async Task Unregister(string authToken, PushService service, string pushToken)
         {
             using(var httpClient = MakeHttpClient())
             {
                 var url = new Uri(v8Url, "unsubscribe");
-                string json = GetPayload(service, regid);
+                string json = GetPayload(service, pushToken);
 
                 var httpReq = new HttpRequestMessage()
                 {

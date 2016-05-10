@@ -5,8 +5,10 @@ namespace Toggl.Phoebe.Net
 {
     public interface IPushClient
     {
-        Task Register(string authToken, PushService service, string regid);
+        string GetPushToken();
 
-        Task Unregister(string authToken, PushService service, string regid);
+        Task Register(string authToken, PushService service, string pushToken);
+
+        Task Unregister(string authToken, PushService service, string pushToken);
     }
 }

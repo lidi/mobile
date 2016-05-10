@@ -80,7 +80,7 @@ namespace Toggl.Phoebe.Logging
 
             var settings = Reactive.StoreManager.Singleton.AppState.Settings;
             md.AddToTab("State", "Experiment", OBMExperimentManager.ExperimentNumber);
-            md.AddToTab("State", "Push registered", string.IsNullOrWhiteSpace(settings.GcmRegistrationId) ? "No" : "Yes");
+            md.AddToTab("State", "Push registered", string.IsNullOrWhiteSpace(settings.PushToken) ? "No" : "Yes");
 
             md.AddToTab("Settings", "Show projects for new", settings.ChooseProjectForNew ? "Yes" : "No");
             md.AddToTab("Settings", "Idle notifications", settings.IdleNotification ? "Yes" : "No");

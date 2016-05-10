@@ -273,6 +273,14 @@ namespace Toggl.Phoebe.Data
                 Data = Either<SettingChangeInfo, Exception>.Left(info);
             }
         }
+
+        public sealed class RegisterPush : DataMsg
+        {
+        }
+
+        public sealed class UnregisterPush : DataMsg
+        {
+        }
     }
 
     public abstract class ServerRequest

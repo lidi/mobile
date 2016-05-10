@@ -458,7 +458,7 @@ namespace Toggl.Phoebe.Tests.Data.Migration
 
             // Check settings.
             Assert.That(newSettings.ChooseProjectForNew, Is.EqualTo(oldSettings.ChooseProjectForNew));
-            Assert.That(newSettings.GcmRegistrationId, Is.EqualTo(oldSettings.GcmRegistrationId));
+            Assert.That(newSettings.PushToken, Is.EqualTo(oldSettings.GcmRegistrationId));
             Assert.That(newSettings.GetChangesLastRun, Is.EqualTo(oldSettings.SyncLastRun));
             Assert.That(newSettings.GroupedEntries, Is.EqualTo(oldSettings.GroupedTimeEntries));
             Assert.That(newSettings.IdleNotification, Is.EqualTo(oldSettings.IdleNotification));

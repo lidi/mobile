@@ -11,9 +11,11 @@ namespace Toggl.Joey.Net
     {
         public override void OnReceive(Context context, Intent intent)
         {
-            var serviceIntent = new Intent(context, typeof(GcmService));
-            serviceIntent.ReplaceExtras(intent.Extras);
-            StartWakefulService(context, serviceIntent);
+            Phoebe.Reactive.RxChain.Send(new Phoebe.Data.ServerRequest.GetChanges());
+
+            //var serviceIntent = new Intent(context, typeof(GcmService));
+            //serviceIntent.ReplaceExtras(intent.Extras);
+            //StartWakefulService(context, serviceIntent);
 
             ResultCode = Result.Ok;
         }

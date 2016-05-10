@@ -2,6 +2,8 @@
 using Android.Content;
 using Android.Gms.Gcm.Iid;
 using Toggl.Joey.Net;
+using Toggl.Phoebe.Data;
+using Toggl.Phoebe.Reactive;
 using XPlatUtils;
 
 namespace ClientApp
@@ -14,8 +16,7 @@ namespace ClientApp
     {
         public override void OnTokenRefresh()
         {
-            var gcmManager = ServiceContainer.Resolve<GcmRegistrationManager>();
-            gcmManager.RegisterDevice();
+            RxChain.Send(new DataMsg.RegisterPush());
         }
     }
 }

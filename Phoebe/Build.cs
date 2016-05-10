@@ -29,6 +29,7 @@ namespace Toggl.Phoebe
         public static readonly string GcmSenderId = "{GMC_SENDER_ID}";
         public static readonly string XamarinInsightsApiKey = "{XAMARIN_INSIGHTS_API_KEY_ANDROID}";
         public static readonly string GooglePlayUrl = "https://play.google.com/store/apps/details?id=com.toggl.timer";
+        public const Net.PushService PushService = Net.PushService.APNS;
 #endif
         #endregion
 
@@ -40,6 +41,7 @@ namespace Toggl.Phoebe
         public static readonly string XamarinInsightsApiKey = "{XAMARIN_INSIGHTS_API_KEY_IOS}";
         public static readonly string TestFairyApiToken = "{TESTFAIRY_API_TOKEN}";
         public static readonly string GoogleClientId = "{GOOGLE_CLIENT_ID}";
+        public const Net.PushService PushService = Net.PushService.APNS;
 #endif
         #endregion
     }

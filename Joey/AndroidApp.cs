@@ -70,7 +70,6 @@ namespace Toggl.Joey
             // Register Joey components:
             ServiceContainer.Register<ILogger> (() => new Logger());
             ServiceContainer.Register<Context> (this);
-            ServiceContainer.Register<GcmRegistrationManager> ();
             ServiceContainer.Register<AndroidNotificationManager> ();
             ServiceContainer.Register<ILoggerClient> (() => new LogClient());
             var tracker = new Tracker(this);
@@ -94,7 +93,8 @@ namespace Toggl.Joey
             }
 
             componentsInitialized = true;
-            ServiceContainer.Resolve<GcmRegistrationManager> ();
+            // TODO RX: Move this somewhere else. Previously it was ServiceContainer.Resolve<GcmRegistrationManager> ();
+            RxChain.Send(new Phoebe.Data.DataMsg.RegisterPush());
             ServiceContainer.Resolve<AndroidNotificationManager> ();
         }
 
