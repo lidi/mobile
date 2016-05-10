@@ -101,14 +101,10 @@ namespace Toggl.Phoebe.Reactive
             });
 
             requestManager
-            .Synchronize()  // Make sure requests are run one after the other
             .SelectAsync(async x => await x.Item1.MatchType(
-                             (ServerRequest.DownloadEntries _) =>
-                             DownloadEntries(x.Item1, x.Item2),
-                             (ServerRequest.GetChanges _) =>
-                             GetChanges(x.Item1, x.Item2),
-                             (ServerRequest.GetCurrentState _) =>
-                             GetChanges(x.Item1, x.Item2),
+                             (ServerRequest.DownloadEntries _) => DownloadEntries(x.Item1, x.Item2),
+                             (ServerRequest.GetChanges _) => GetChanges(x.Item1, x.Item2),
+                             (ServerRequest.GetCurrentState _) => GetChanges(x.Item1, x.Item2),
                              (ServerRequest.Authenticate req) =>
             {
                 switch (req.Operation)

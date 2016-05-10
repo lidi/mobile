@@ -12,7 +12,7 @@ namespace ClientApp
     // to refresh the registration token in the event of app reinstallation or a security issue.
     // https://developer.xamarin.com/guides/cross-platform/application_fundamentals/notifications/android/remote_notifications_in_android/#Implement_an_Instance_ID_Listener_Service
     [Service(Exported = false), IntentFilter(new[] { "com.google.android.gms.iid.InstanceID" })]
-    class MyInstanceIDListenerService : InstanceIDListenerService
+    class InstanceIDListenerService : Android.Gms.Gcm.Iid.InstanceIDListenerService
     {
         public override void OnTokenRefresh()
         {

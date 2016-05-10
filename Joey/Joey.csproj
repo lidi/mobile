@@ -188,7 +188,6 @@
     <Compile Include="AndroidApp.cs" />
     <Compile Include="UI\Activities\BaseActivity.cs" />
     <Compile Include="Net\GcmBroadcastReceiver.cs" />
-    <Compile Include="Net\GcmService.cs" />
     <Compile Include="AndroidNotificationManager.cs" />
     <Compile Include="StopRunningTimeEntryService.cs" />
     <Compile Include="UI\Components\TimerComponent.cs" />

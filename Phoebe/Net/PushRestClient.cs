@@ -71,19 +71,19 @@ namespace Toggl.Phoebe.Net
             var token = string.Empty;
 
             // TODO: Probably not the best way to do this, we can move this code to the platform projects later
-            #if __ANDROID__
+#if __ANDROID__
             var ctx = ServiceContainer.Resolve<Android.Content.Context>();
 
             // Check Google Play Services availability
             if (Android.Gms.Common.GoogleApiAvailability.Instance.IsGooglePlayServicesAvailable(ctx)
-                == Android.Gms.Common.ConnectionResult.Success)
+                    == Android.Gms.Common.ConnectionResult.Success)
             {
                 var instanceID = Android.Gms.Gcm.Iid.InstanceID.GetInstance(ctx);
                 token = instanceID.GetToken(Build.GcmSenderId, Android.Gms.Gcm.GoogleCloudMessaging.InstanceIdScope, null);
             }
-            #elif __IOS__
+#elif __IOS__
             // TODO
-            #endif
+#endif
 
             return token;
         }

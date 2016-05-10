@@ -104,8 +104,8 @@ namespace Toggl.Phoebe.Reactive
             // TODO: pushClient.GetPushToken may take some time, we may need
             // to make it asynchronous to prevent blocking the RxChain
             var pushToken = string.IsNullOrEmpty(state.Settings.PushToken)
-                                  ? pushClient.GetPushToken()
-                                  : state.Settings.PushToken;
+                            ? pushClient.GetPushToken()
+                            : state.Settings.PushToken;
 
             if (!string.IsNullOrEmpty(pushToken))
             {
@@ -128,7 +128,7 @@ namespace Toggl.Phoebe.Reactive
             }
 
             return DataSyncMsg.Create(state.With(settings: state.Settings.With(pushToken: string.Empty)));
-       }
+        }
 
         static DataSyncMsg<AppState> ServerRequest(AppState state, DataMsg msg)
         {
