@@ -66,6 +66,7 @@ namespace Toggl.Phoebe.Reactive
         // sinceDate for GetChanges requests shouldn't be older than two months. Server requirements.
         // Make a few days stricter to be on the safe side.
         const int GetChangesSinceDateLimit = -56;
+        const int BufferMilliseconds = 1000;
 
         const string QueueId = "SYNC_OUT";
         const string DuplicatedNameMessage = "Name has already been taken";
@@ -88,8 +89,6 @@ namespace Toggl.Phoebe.Reactive
         readonly JsonMapper mapper;
         readonly INetworkPresence networkPresence;
         readonly ITogglClient client;
-        readonly Subject<Tuple<ServerRequest, AppState>> requestManager = new Subject<Tuple<ServerRequest, AppState>> ();
-
 
         SyncManager()
         {
@@ -99,41 +98,13 @@ namespace Toggl.Phoebe.Reactive
 
             StoreManager.Singleton
             .Observe()
+            .TimedBuffer(BufferMilliseconds)
             .SelectAsync(EnqueueOrSend)
             .Subscribe((_) => { },
             (ex) =>
             {
                 logError(ex, "Failed to sync. Main observer bug.");
                 // Should pass a generic request?
-                RxChain.Send(new DataMsg.ServerResponse(new ServerRequest.GetChanges(), ex));
-            });
-
-            requestManager
-            .SelectAsync(async x => await x.Item1.MatchType(
-                             (ServerRequest.DownloadEntries _) => DownloadEntries(x.Item1, x.Item2),
-                             (ServerRequest.GetChanges _) => GetChanges(x.Item1, x.Item2),
-                             (ServerRequest.GetCurrentState _) => GetChanges(x.Item1, x.Item2),
-                             (ServerRequest.Authenticate req) =>
-            {
-                switch (req.Operation)
-                {
-                    case ServerRequest.Authenticate.Op.Login:
-                        return LoginAsync(req.Username, req.Password);
-                    case ServerRequest.Authenticate.Op.Signup:
-                        return SignupAsync(req.Username, req.Password);
-                    case ServerRequest.Authenticate.Op.LoginWithGoogle:
-                        return LoginWithGoogleAsync(req.AccessToken);
-                    case ServerRequest.Authenticate.Op.SignupWithGoogle:
-                        return SignupWithGoogleAsync(req.AccessToken);
-                    default:
-                        throw new Exception("Unexpected Authenticate operation");
-                }
-            }))
-            .Subscribe((_) => { },
-            (ex) =>
-            {
-                logError(ex, "Failed to sync. RequestManager bug.");
-                // Should pass a dummy request for this cases?
                 RxChain.Send(new DataMsg.ServerResponse(new ServerRequest.GetChanges(), ex));
             });
         }
@@ -170,6 +141,30 @@ namespace Toggl.Phoebe.Reactive
             }
         }
 
+        async Task HandleRequest(ServerRequest request, AppState state)
+        {
+            await request.MatchType(
+                (ServerRequest.DownloadEntries _) => DownloadEntries(request, state),
+                (ServerRequest.GetChanges _) => GetChanges(request, state),
+                (ServerRequest.GetCurrentState _) => GetChanges(request, state),
+                (ServerRequest.Authenticate req) =>
+            {
+                switch (req.Operation)
+                {
+                    case ServerRequest.Authenticate.Op.Login:
+                        return LoginAsync(req.Username, req.Password);
+                    case ServerRequest.Authenticate.Op.Signup:
+                        return SignupAsync(req.Username, req.Password);
+                    case ServerRequest.Authenticate.Op.LoginWithGoogle:
+                        return LoginWithGoogleAsync(req.AccessToken);
+                    case ServerRequest.Authenticate.Op.SignupWithGoogle:
+                        return SignupWithGoogleAsync(req.AccessToken);
+                    default:
+                        throw new Exception("Unexpected Authenticate operation");
+                }
+            });
+        }
+
         async Task EnqueueOrSend(DataSyncMsg<AppState> syncMsg)
         {
             var remoteObjects = new List<CommonData> ();
@@ -193,7 +188,11 @@ namespace Toggl.Phoebe.Reactive
                         }
                         catch (Exception ex)
                         {
-                            logError(ex);
+                            if (ex is RemoteIdException)
+                                logInfo(ex.Message);
+                            else
+                                logError(ex);
+                            
                             Enqueue(data, enqueuedItems, dataStore);
                             queueEmpty = false;
                         }
@@ -217,7 +216,7 @@ namespace Toggl.Phoebe.Reactive
                 RxChain.Send(DataMsg.ServerResponse.CRUD(remoteObjects));
 
             foreach (var req in syncMsg.ServerRequests.Where(x => x is ServerRequest.CRUD == false))
-            requestManager.OnNext(Tuple.Create(req, syncMsg.State));
+                await HandleRequest(req, syncMsg.State);
 
             // Mostly used for test pourposes.
             if (syncMsg.Continuation != null && !syncMsg.Continuation.LocalOnly)
@@ -256,7 +255,7 @@ namespace Toggl.Phoebe.Reactive
                             }
                             catch (RemoteIdException ex)
                             {
-                                Util.Log(LogLevel.Warning, nameof(RemoteIdException), ex.Message);
+                                logInfo(ex.Message);
 
                                 // Items missing a RemoteId shouldn't lock the queue
                                 // TODO RX: Discard conflicting items if they're too old or too many

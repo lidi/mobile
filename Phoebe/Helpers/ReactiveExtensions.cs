@@ -40,20 +40,30 @@ namespace Toggl.Phoebe.Helpers
             return observable.Select(chooser).Where(x => x != null);
         }
 
-        public static IObservable<IList<T>> TimedBuffer<T> (this IObservable<T> observable, int milliseconds)
+        public static IObservable<T> TimedBuffer<T> (this IObservable<T> observable, int milliseconds)
         {
-            if (milliseconds > 0)
+            if (milliseconds <= 0)
+                throw new ArgumentException($"{nameof(milliseconds)} must be bigger than 0");
+
+            var queue = new System.Collections.Concurrent.ConcurrentQueue<T>();
+            var timer = new System.Timers.Timer(milliseconds) { AutoReset = true };
+
+            return Observable.Create((IObserver<T> obs) =>
             {
-                // TODO: This is firing up even if there're no events. Can it be improved?
-                return observable
-                       .Buffer(TimeSpan.FromMilliseconds(milliseconds))
-                       .Where(b => b.Count > 0);
-            }
-            else
-            {
-                return observable
-                .Select(x => new List<T> () { x });
-            }
+                T next = default(T);
+                timer.Elapsed += (sender, timestamp) =>
+                {
+                    if (queue.TryDequeue(out next))
+                        obs.OnNext(next);
+                };
+                timer.Start();
+                var disp = observable.Subscribe(queue.Enqueue);
+                return () =>
+                {
+                    disp.Dispose();
+                    timer.Dispose();
+                };
+            });
         }
 
         /// <summary>
