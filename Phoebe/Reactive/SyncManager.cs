@@ -98,7 +98,9 @@ namespace Toggl.Phoebe.Reactive
 
             StoreManager.Singleton
             .Observe()
+#if !__TESTS__
             .TimedBuffer(BufferMilliseconds)
+#endif
             .SelectAsync(EnqueueOrSend)
             .Subscribe((_) => { },
             (ex) =>
@@ -192,7 +194,7 @@ namespace Toggl.Phoebe.Reactive
                                 logInfo(ex.Message);
                             else
                                 logError(ex);
-                            
+
                             Enqueue(data, enqueuedItems, dataStore);
                             queueEmpty = false;
                         }
@@ -216,7 +218,9 @@ namespace Toggl.Phoebe.Reactive
                 RxChain.Send(DataMsg.ServerResponse.CRUD(remoteObjects));
 
             foreach (var req in syncMsg.ServerRequests.Where(x => x is ServerRequest.CRUD == false))
+            {
                 await HandleRequest(req, syncMsg.State);
+            }
 
             // Mostly used for test pourposes.
             if (syncMsg.Continuation != null && !syncMsg.Continuation.LocalOnly)
